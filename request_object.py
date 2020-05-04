@@ -67,16 +67,13 @@ class PhoneField(object):
     pass
 
 
-class DateField(Field):
+class DateField(CharField):
     def __set__(self, obj, val):
         super(DateField, self).__set__(obj, val)
-        err = 'field "{}" must be a string in format "DD.MM.YYYY"'.format(self.name)
-        if val is not None and not isinstance(val, basestring):
-            raise ValueError(err)
         try:
             datetime.datetime.strptime(val, '%d.%m.%Y')
         except ValueError:
-            raise ValueError(err)
+            raise ValueError('field "{}" must be a string in format "DD.MM.YYYY"'.format(self.name))
 
         self.val = val
 
@@ -85,8 +82,21 @@ class BirthDayField(object):
     pass
 
 
-class GenderField(object):
-    pass
+class GenderField(Field):
+    def __set__(self, obj, val):
+        super(GenderField, self).__set__(obj, val)
+        possible_values = sorted(GENDERS.keys())
+        err = 'field "{}" must be an integer, one of {}'.format(
+            self.name,
+            ', '.join(str(i) for i in possible_values)
+        )
+
+        if val is not None and not isinstance(val, int):
+            raise ValueError(err)
+        elif val not in possible_values:
+            raise ValueError(err)
+
+        self.val = val
 
 
 class ClientIDsField(Field):
@@ -95,6 +105,7 @@ class ClientIDsField(Field):
         err = 'field "{}" must be a list of integers'.format(self.name)
         if val is not None and not isinstance(val, list):
             raise ValueError(err)
+
         for id_ in val:
             if not isinstance(id_, int):
                 raise ValueError(err)
