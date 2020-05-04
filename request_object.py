@@ -10,6 +10,8 @@ GENDERS = {
     FEMALE: "female",
 }
 
+DATE_FMT = '%d.%m.%Y'
+
 
 class FieldInitializerMetaclass(type):
     def __init__(cls, name, bases, dct):
@@ -100,13 +102,22 @@ class DateField(CharField):
             return
 
         try:
-            datetime.datetime.strptime(val, '%d.%m.%Y')
+            datetime.datetime.strptime(val, DATE_FMT)
         except ValueError:
             raise ValueError('field "{}" must be a string in format "DD.MM.YYYY"'.format(self.name))
 
 
-class BirthDayField(object):
-    pass
+class BirthDayField(DateField):
+    MAX_AGE = 70
+
+    def _validate(self, val):
+        super(BirthDayField, self)._validate(val)
+        if val is None:
+            return
+
+        birth_dt = datetime.datetime.strptime(val, DATE_FMT)
+        if datetime.date.today().year - birth_dt.year > self.MAX_AGE:
+            raise ValueError('age more than {} years in field "{}"'.format(self.MAX_AGE, self.name))
 
 
 class GenderField(Field):
