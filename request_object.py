@@ -151,12 +151,23 @@ class ClientIDsField(Field):
                 raise ValueError(err)
 
 
-class ClientsInterestsRequest(object):
+class RequestObject(object):
+    __metaclass__ = FieldInitializerMetaclass
+
+    def __init__(self, data):
+        for field in self._fields:
+            if field.required and field.name not in data:
+                raise ValueError('field "{}" is required'.format(field.name))
+
+            setattr(self, field.name, data.get(field.name))
+
+
+class ClientsInterestsRequest(RequestObject):
     client_ids = ClientIDsField(required=True)
     date = DateField(required=False, nullable=True)
 
 
-class OnlineScoreRequest(object):
+class OnlineScoreRequest(RequestObject):
     first_name = CharField(required=False, nullable=True)
     last_name = CharField(required=False, nullable=True)
     email = EmailField(required=False, nullable=True)
@@ -165,21 +176,12 @@ class OnlineScoreRequest(object):
     gender = GenderField(required=False, nullable=True)
 
 
-class MethodRequest(object):
-    __metaclass__ = FieldInitializerMetaclass
-
+class MethodRequest(RequestObject):
     account = CharField(required=False, nullable=True)
     login = CharField(required=True, nullable=True)
     token = CharField(required=True, nullable=True)
     arguments = ArgumentsField(required=True, nullable=True)
     method = CharField(required=True, nullable=False)
-
-    def __init__(self, data):
-        for field in self._fields:
-            if field.required and field.name not in data:
-                raise ValueError('field "{}" is required'.format(field.name))
-
-            setattr(self, field.name, data.get(field.name))
 
     @property
     def is_admin(self):
