@@ -161,6 +161,12 @@ class RequestObject(object):
 
             setattr(self, field.name, data.get(field.name))
 
+        self._validate()
+
+    def _validate(self):
+        """default nop implementation"""
+        pass
+
 
 class ClientsInterestsRequest(RequestObject):
     client_ids = ClientIDsField(required=True)
@@ -174,6 +180,22 @@ class OnlineScoreRequest(RequestObject):
     phone = PhoneField(required=False, nullable=True)
     birthday = BirthDayField(required=False, nullable=True)
     gender = GenderField(required=False, nullable=True)
+
+    REQUIRED_PAIRS = [
+        (phone, email),
+        (first_name, last_name),
+        (gender, birthday),
+    ]
+
+    def _validate(self):
+        for field_a, field_b in self.REQUIRED_PAIRS:
+            if getattr(self, field_a.name) and getattr(self, field_b.name):
+                return
+
+        required_pairs_repr = [
+            (field_a.name, field_b.name) for field_a, field_b in self.REQUIRED_PAIRS
+        ]
+        raise ValueError('one of these pairs must be set: {}'.format(required_pairs_repr))
 
 
 class MethodRequest(RequestObject):
