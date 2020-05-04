@@ -44,6 +44,18 @@ class Field(object):
         if val is None and not self.nullable:
             raise ValidationError('field "{}" can\'t be null'.format(self.name))
 
+    def __repr__(self):
+        return (
+            '<{type} name: "{name}", '
+            'required: {required} , '
+            'nullable: {nullable}>'
+        ).format(
+            type=type(self),
+            name=self.name,
+            required=self.required,
+            nullable=self.nullable
+        )
+
 
 class DictField(Field):
     def _validate(self, val):
