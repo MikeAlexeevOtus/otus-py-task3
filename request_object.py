@@ -21,7 +21,7 @@ class FieldInitializerMetaclass(type):
         cls._fields = []
 
         for field_name, field in cls.__dict__.items():
-            if not isinstance(field, (Field, DictField)):
+            if not isinstance(field, Field):
                 continue
 
             field.name = field_name
@@ -57,15 +57,6 @@ class Field(object):
         )
 
 
-class DictField(Field):
-    def _validate(self, val):
-        super(DictField, self)._validate(val)
-        if val is None:
-            return
-        elif not isinstance(val, dict):
-            raise ValidationError('field "{}" must be a dict'.format(self.name))
-
-
 class CharField(Field):
     def _validate(self, val):
         super(CharField, self)._validate(val)
@@ -75,8 +66,13 @@ class CharField(Field):
             raise ValidationError('field "{}" must be a string'.format(self.name))
 
 
-class ArgumentsField(DictField):
-    pass
+class ArgumentsField(Field):
+    def _validate(self, val):
+        super(ArgumentsField, self)._validate(val)
+        if val is None:
+            return
+        elif not isinstance(val, dict):
+            raise ValidationError('field "{}" must be a dict'.format(self.name))
 
 
 class EmailField(CharField):
