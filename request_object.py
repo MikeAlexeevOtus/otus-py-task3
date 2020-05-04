@@ -71,8 +71,26 @@ class EmailField(CharField):
             raise ValueError('field "{}" must be a valid email addr'.format(self.name))
 
 
-class PhoneField(object):
-    pass
+class PhoneField(Field):
+    STRLEN = 11
+    FIRST_CHAR = '7'
+
+    def _validate(self, val):
+        super(PhoneField, self)._validate(val)
+        if val is None:
+            return
+
+        err = 'field "{}" must be an integer or string, 11 chars len starting with 7'.format(self.name)
+        if not isinstance(val, (int, basestring)):
+            raise ValueError(err)
+
+        val = str(val)
+        if any([
+                not val.isdigit(),
+                len(val) != self.STRLEN,
+                val[0] != self.FIRST_CHAR,
+        ]):
+            raise ValueError(err)
 
 
 class DateField(CharField):
