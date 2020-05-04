@@ -1,0 +1,9 @@
+{
+    "method": "online_score",
+    "token": "7ad4e3b2463d59717aa8f2041ccef1b7a0f087a5bf12fae550a84dd6b5893c2d40252d300e8a0e0bec8b288d365f8ba22826d48c17fcd8981f68cdbbd9a31a82",
+    "login": "zbc",
+    "arguments": {
+        "first_name": "john",
+        "last_name": "doe"
+    }
+}
