@@ -9,6 +9,8 @@ import uuid
 from optparse import OptionParser
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
+import request_object
+
 SALT = "Otus"
 ADMIN_SALT = "42"
 OK = 200
@@ -37,7 +39,23 @@ def check_auth(request):
 
 
 def method_handler(request, ctx, store):
-    response, code = None, None
+    req_obj = request_object.MethodRequest(request['body'])
+    errors = req_obj.get_validation_errors()
+    if errors:
+        return str(errors), BAD_REQUEST
+
+    if not check_auth(req_obj):
+        return ERRORS[FORBIDDEN], FORBIDDEN
+
+    if req_obj.method == 'online_score':
+        online_score_obj = request_object.OnlineScoreRequest(req_obj.arguments)
+        ctx['has'] = online_score_obj.initialized_fields
+
+    elif req_obj.method == 'client_interests':
+        client_interests_obj = request_object.ClientsInterestsRequest(req_obj.arguments)
+        ctx['nclients'] = client_interests_obj.nclients
+
+    response, code = None, 200
     return response, code
 
 

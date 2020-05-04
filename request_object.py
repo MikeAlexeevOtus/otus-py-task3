@@ -185,6 +185,13 @@ class ClientsInterestsRequest(RequestObject):
     client_ids = ClientIDsField(required=True)
     date = DateField(required=False, nullable=True)
 
+    @property
+    def nclients(self):
+        if self.get_validation_errors():
+            raise RuntimeError('can\'t get nclients from invalid request object')
+
+        return len(self.client_ids)
+
 
 class OnlineScoreRequest(RequestObject):
     first_name = CharField(required=False, nullable=True)
@@ -199,6 +206,13 @@ class OnlineScoreRequest(RequestObject):
         (first_name, last_name),
         (gender, birthday),
     ]
+
+    @property
+    def initialized_fields(self):
+        if self.get_validation_errors():
+            raise RuntimeError('can\'t get nclients from invalid request object')
+
+        return [field.name for field in self._fields if getattr(self, field.name) is not None]
 
     def _validate(self):
         for field_a, field_b in self.REQUIRED_PAIRS:
