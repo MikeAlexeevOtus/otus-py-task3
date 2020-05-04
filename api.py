@@ -38,9 +38,11 @@ def check_auth(request):
     if is_admin(request):
         digest = hashlib.sha512(datetime.datetime.now().strftime("%Y%m%d%H") + ADMIN_SALT).hexdigest()
     else:
-        digest = hashlib.sha512(request.account or '' +
-                                request.login or '' +
-                                SALT).hexdigest()
+        digest = hashlib.sha512(
+            (request.account or '') +
+            (request.login or '') +
+            SALT
+        ).hexdigest()
 
     # for debug only
     logging.debug('correct digest: %s', digest)
@@ -54,7 +56,7 @@ def method_handler(request, ctx, store):
     req_obj = request_object.MethodRequest(request['body'])
     errors = req_obj.get_validation_errors()
     if errors:
-        return errors, BAD_REQUEST
+        return errors, INVALID_REQUEST
 
     if not check_auth(req_obj):
         return ERRORS[FORBIDDEN], FORBIDDEN
@@ -64,16 +66,21 @@ def method_handler(request, ctx, store):
 
         errors = online_score_obj.get_validation_errors()
         if errors:
-            return errors, BAD_REQUEST
+            return errors, INVALID_REQUEST
 
         ctx['has'] = online_score_obj.initialized_fields
-        return scoring.get_score(**online_score_obj.asdict()), OK
+
+        if is_admin(req_obj):
+            score = 42
+        else:
+            score = scoring.get_score(**online_score_obj.asdict())
+        return {'score': score}, OK
 
     elif req_obj.method == 'clients_interests':
         client_interests_obj = request_object.ClientsInterestsRequest(req_obj.arguments)
         errors = client_interests_obj.get_validation_errors()
         if errors:
-            return errors, BAD_REQUEST
+            return errors, INVALID_REQUEST
 
         ctx['nclients'] = client_interests_obj.nclients
         interests = {

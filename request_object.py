@@ -34,7 +34,7 @@ class Field(object):
         self.nullable = nullable
 
     def __get__(self, obj, objtype):
-        return obj.__dict__[self.name]
+        return obj.__dict__.get(self.name)
 
     def __set__(self, obj, val):
         self._validate(val)
@@ -146,7 +146,7 @@ class ClientIDsField(Field):
             return
 
         err = 'field "{}" must be a list of integers'.format(self.name)
-        if not isinstance(val, list):
+        if not isinstance(val, list) or not val:
             raise ValidationError(err)
 
         for id_ in val:
@@ -223,7 +223,8 @@ class OnlineScoreRequest(RequestObject):
 
     def _validate(self):
         for field_a, field_b in self.REQUIRED_PAIRS:
-            if getattr(self, field_a.name) and getattr(self, field_b.name):
+            if (getattr(self, field_a.name) is not None and
+                    getattr(self, field_b.name) is not None):
                 return
 
         required_pairs_repr = [
