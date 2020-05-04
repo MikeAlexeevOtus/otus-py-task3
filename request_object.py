@@ -163,6 +163,7 @@ class RequestObject(object):
         for field in self._fields:
             if field.required and field.name not in data:
                 self._errors.append('field "{}" is required'.format(field.name))
+                continue
 
             try:
                 setattr(self, field.name, data.get(field.name))
