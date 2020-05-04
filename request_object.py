@@ -13,6 +13,10 @@ GENDERS = {
 DATE_FMT = '%d.%m.%Y'
 
 
+class ValidationError(ValueError):
+    pass
+
+
 class FieldInitializerMetaclass(type):
     def __init__(cls, name, bases, dct):
         cls._fields = []
@@ -39,7 +43,7 @@ class Field(object):
 
     def _validate(self, val):
         if val is None and not self.nullable:
-            raise ValueError('field "{}" can\'t be null'.format(self.name))
+            raise ValidationError('field "{}" can\'t be null'.format(self.name))
 
 
 class DictField(Field):
@@ -48,7 +52,7 @@ class DictField(Field):
         if val is None:
             return
         elif not isinstance(val, dict):
-            raise ValueError('field "{}" must be a dict'.format(self.name))
+            raise ValidationError('field "{}" must be a dict'.format(self.name))
 
 
 class CharField(Field):
@@ -57,7 +61,7 @@ class CharField(Field):
         if val is None:
             return
         elif not isinstance(val, basestring):
-            raise ValueError('field "{}" must be a string'.format(self.name))
+            raise ValidationError('field "{}" must be a string'.format(self.name))
 
 
 class ArgumentsField(DictField):
@@ -70,7 +74,7 @@ class EmailField(CharField):
         if val is None:
             return
         elif '@' not in val:
-            raise ValueError('field "{}" must be a valid email addr'.format(self.name))
+            raise ValidationError('field "{}" must be a valid email addr'.format(self.name))
 
 
 class PhoneField(Field):
@@ -84,7 +88,7 @@ class PhoneField(Field):
 
         err = 'field "{}" must be an integer or string, 11 chars len starting with 7'.format(self.name)
         if not isinstance(val, (int, basestring)):
-            raise ValueError(err)
+            raise ValidationError(err)
 
         val = str(val)
         if any([
@@ -92,7 +96,7 @@ class PhoneField(Field):
                 len(val) != self.STRLEN,
                 val[0] != self.FIRST_CHAR,
         ]):
-            raise ValueError(err)
+            raise ValidationError(err)
 
 
 class DateField(CharField):
@@ -104,7 +108,7 @@ class DateField(CharField):
         try:
             datetime.datetime.strptime(val, DATE_FMT)
         except ValueError:
-            raise ValueError('field "{}" must be a string in format "DD.MM.YYYY"'.format(self.name))
+            raise ValidationError('field "{}" must be a string in format "DD.MM.YYYY"'.format(self.name))
 
 
 class BirthDayField(DateField):
@@ -117,7 +121,7 @@ class BirthDayField(DateField):
 
         birth_dt = datetime.datetime.strptime(val, DATE_FMT)
         if datetime.date.today().year - birth_dt.year > self.MAX_AGE:
-            raise ValueError('age more than {} years in field "{}"'.format(self.MAX_AGE, self.name))
+            raise ValidationError('age more than {} years in field "{}"'.format(self.MAX_AGE, self.name))
 
 
 class GenderField(Field):
@@ -133,7 +137,7 @@ class GenderField(Field):
         )
 
         if val not in possible_values:
-            raise ValueError(err)
+            raise ValidationError(err)
 
 
 class ClientIDsField(Field):
@@ -144,11 +148,11 @@ class ClientIDsField(Field):
 
         err = 'field "{}" must be a list of integers'.format(self.name)
         if not isinstance(val, list):
-            raise ValueError(err)
+            raise ValidationError(err)
 
         for id_ in val:
             if not isinstance(id_, int):
-                raise ValueError(err)
+                raise ValidationError(err)
 
 
 class RequestObject(object):
@@ -162,12 +166,12 @@ class RequestObject(object):
 
             try:
                 setattr(self, field.name, data.get(field.name))
-            except ValueError as e:
+            except ValidationError as e:
                 self._errors.append(str(e))
 
         try:
             self._validate()
-        except ValueError as e:
+        except ValidationError as e:
             self._errors.append(str(e))
 
     def _validate(self):
@@ -204,7 +208,7 @@ class OnlineScoreRequest(RequestObject):
         required_pairs_repr = [
             (field_a.name, field_b.name) for field_a, field_b in self.REQUIRED_PAIRS
         ]
-        raise ValueError('one of these pairs must be set: {}'.format(required_pairs_repr))
+        raise ValidationError('one of these pairs must be set: {}'.format(required_pairs_repr))
 
 
 class MethodRequest(RequestObject):
