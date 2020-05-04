@@ -247,12 +247,3 @@ class MethodRequest(RequestObject):
     token = CharField(required=True, nullable=True)
     arguments = ArgumentsField(required=True, nullable=True)
     method = CharField(required=True, nullable=False)
-
-
-if __name__ == '__main__':
-    mr = MethodRequest({
-        'login': 'x',
-        'arguments': {},
-        'method': 123,
-        'token': 'abc'
-    })
