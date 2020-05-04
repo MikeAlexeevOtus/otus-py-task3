@@ -17,6 +17,8 @@ class ValidationError(ValueError):
 
 
 class FieldInitializerMetaclass(type):
+    """metaclass for fields names initialization"""
+
     def __init__(cls, name, bases, dct):
         cls._fields = []
 
@@ -29,6 +31,8 @@ class FieldInitializerMetaclass(type):
 
 
 class Field(object):
+    """descriptor class for field validation"""
+
     def __init__(self, required=True, nullable=False):
         self.required = required
         self.nullable = nullable
@@ -42,6 +46,8 @@ class Field(object):
 
     def _validate(self, val):
         if val is None and not self.nullable:
+            # basic validation
+            # more checks in subclasses
             raise ValidationError('field "{}" can\'t be null'.format(self.name))
 
     def __repr__(self):
@@ -183,7 +189,7 @@ class RequestObject(object):
             self._errors.append(str(e))
 
     def _validate(self):
-        """default nop implementation"""
+        """any additional fields validation should be done here"""
 
     def get_validation_errors(self):
         return self._errors
