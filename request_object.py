@@ -155,17 +155,26 @@ class RequestObject(object):
     __metaclass__ = FieldInitializerMetaclass
 
     def __init__(self, data):
+        self._errors = []
         for field in self._fields:
             if field.required and field.name not in data:
-                raise ValueError('field "{}" is required'.format(field.name))
+                self._errors.append('field "{}" is required'.format(field.name))
 
-            setattr(self, field.name, data.get(field.name))
+            try:
+                setattr(self, field.name, data.get(field.name))
+            except ValueError as e:
+                self._errors.append(str(e))
 
-        self._validate()
+        try:
+            self._validate()
+        except ValueError as e:
+            self._errors.append(str(e))
 
     def _validate(self):
         """default nop implementation"""
-        pass
+
+    def get_validation_errors(self):
+        return self._errors
 
 
 class ClientsInterestsRequest(RequestObject):
