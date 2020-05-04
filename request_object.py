@@ -43,14 +43,18 @@ class Field(object):
 class DictField(Field):
     def _validate(self, val):
         super(DictField, self)._validate(val)
-        if val is not None and not isinstance(val, dict):
+        if val is None:
+            return
+        elif not isinstance(val, dict):
             raise ValueError('field "{}" must be a dict'.format(self.name))
 
 
 class CharField(Field):
     def _validate(self, val):
         super(CharField, self)._validate(val)
-        if val is not None and not isinstance(val, basestring):
+        if val is None:
+            return
+        elif not isinstance(val, basestring):
             raise ValueError('field "{}" must be a string'.format(self.name))
 
 
@@ -59,7 +63,12 @@ class ArgumentsField(DictField):
 
 
 class EmailField(CharField):
-    pass
+    def _validate(self, val):
+        super(EmailField, self)._validate(val)
+        if val is None:
+            return
+        elif '@' not in val:
+            raise ValueError('field "{}" must be a valid email addr'.format(self.name))
 
 
 class PhoneField(object):
@@ -69,6 +78,9 @@ class PhoneField(object):
 class DateField(CharField):
     def _validate(self, val):
         super(DateField, self)._validate(val)
+        if val is None:
+            return
+
         try:
             datetime.datetime.strptime(val, '%d.%m.%Y')
         except ValueError:
@@ -82,23 +94,27 @@ class BirthDayField(object):
 class GenderField(Field):
     def _validate(self, val):
         super(GenderField, self)._validate(val)
+        if val is None:
+            return
+
         possible_values = sorted(GENDERS.keys())
         err = 'field "{}" must be an integer, one of {}'.format(
             self.name,
             ', '.join(str(i) for i in possible_values)
         )
 
-        if val is not None and not isinstance(val, int):
-            raise ValueError(err)
-        elif val not in possible_values:
+        if val not in possible_values:
             raise ValueError(err)
 
 
 class ClientIDsField(Field):
     def _validate(self, val):
         super(ClientIDsField, self)._validate(val)
+        if val is None:
+            return
+
         err = 'field "{}" must be a list of integers'.format(self.name)
-        if val is not None and not isinstance(val, list):
+        if not isinstance(val, list):
             raise ValueError(err)
 
         for id_ in val:
