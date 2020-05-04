@@ -35,11 +35,11 @@ class Field(object):
         self.nullable = nullable
 
     def __get__(self, obj, objtype):
-        return self.val
+        return obj.__dict__[self.name]
 
     def __set__(self, obj, val):
         self._validate(val)
-        self.val = val
+        obj.__dict__[self.name] = val
 
     def _validate(self, val):
         if val is None and not self.nullable:
