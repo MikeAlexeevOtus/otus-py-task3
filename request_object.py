@@ -1,6 +1,5 @@
 import datetime
 
-ADMIN_LOGIN = "admin"
 UNKNOWN = 0
 MALE = 1
 FEMALE = 2
@@ -239,10 +238,6 @@ class MethodRequest(RequestObject):
     token = CharField(required=True, nullable=True)
     arguments = ArgumentsField(required=True, nullable=True)
     method = CharField(required=True, nullable=False)
-
-    @property
-    def is_admin(self):
-        return self.login == ADMIN_LOGIN
 
 
 if __name__ == '__main__':

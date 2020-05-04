@@ -13,6 +13,7 @@ import request_object
 import scoring
 
 SALT = "Otus"
+ADMIN_LOGIN = "admin"
 ADMIN_SALT = "42"
 OK = 200
 BAD_REQUEST = 400
@@ -29,8 +30,12 @@ ERRORS = {
 }
 
 
+def is_admin(request_obj):
+    return request_obj.login == ADMIN_LOGIN
+
+
 def check_auth(request):
-    if request.is_admin:
+    if is_admin(request):
         digest = hashlib.sha512(datetime.datetime.now().strftime("%Y%m%d%H") + ADMIN_SALT).hexdigest()
     else:
         digest = hashlib.sha512(request.account or '' +
