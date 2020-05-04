@@ -10,6 +10,7 @@ from optparse import OptionParser
 from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 import request_object
+import scoring
 
 SALT = "Otus"
 ADMIN_SALT = "42"
@@ -32,7 +33,13 @@ def check_auth(request):
     if request.is_admin:
         digest = hashlib.sha512(datetime.datetime.now().strftime("%Y%m%d%H") + ADMIN_SALT).hexdigest()
     else:
-        digest = hashlib.sha512(request.account + request.login + SALT).hexdigest()
+        digest = hashlib.sha512(request.account or '' +
+                                request.login or '' +
+                                SALT).hexdigest()
+
+    # for debug only
+    logging.debug('correct digest: %s', digest)
+
     if digest == request.token:
         return True
     return False
@@ -42,21 +49,35 @@ def method_handler(request, ctx, store):
     req_obj = request_object.MethodRequest(request['body'])
     errors = req_obj.get_validation_errors()
     if errors:
-        return str(errors), BAD_REQUEST
+        return errors, BAD_REQUEST
 
     if not check_auth(req_obj):
         return ERRORS[FORBIDDEN], FORBIDDEN
 
     if req_obj.method == 'online_score':
         online_score_obj = request_object.OnlineScoreRequest(req_obj.arguments)
+
+        errors = online_score_obj.get_validation_errors()
+        if errors:
+            return errors, BAD_REQUEST
+
         ctx['has'] = online_score_obj.initialized_fields
+        return scoring.get_score(**online_score_obj.asdict()), OK
 
-    elif req_obj.method == 'client_interests':
+    elif req_obj.method == 'clients_interests':
         client_interests_obj = request_object.ClientsInterestsRequest(req_obj.arguments)
-        ctx['nclients'] = client_interests_obj.nclients
+        errors = client_interests_obj.get_validation_errors()
+        if errors:
+            return errors, BAD_REQUEST
 
-    response, code = None, 200
-    return response, code
+        ctx['nclients'] = client_interests_obj.nclients
+        interests = {
+            client_id: scoring.get_interests(client_id)
+            for client_id in client_interests_obj.client_ids
+        }
+        return interests, OK
+
+    return None, OK
 
 
 class MainHTTPHandler(BaseHTTPRequestHandler):

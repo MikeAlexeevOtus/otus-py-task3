@@ -180,6 +180,13 @@ class RequestObject(object):
     def get_validation_errors(self):
         return self._errors
 
+    def asdict(self):
+        data = {}
+        for field in self._fields:
+            data[field.name] = getattr(self, field.name)
+
+        return data
+
 
 class ClientsInterestsRequest(RequestObject):
     client_ids = ClientIDsField(required=True)
