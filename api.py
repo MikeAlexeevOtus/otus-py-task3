@@ -156,5 +156,9 @@ if __name__ == "__main__":
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        pass
+        logging.error("server execution was interrupted")
+    except Exception:
+        logging.exception("exception in server")
+
+    logging.info("stopping server")
     server.server_close()
