@@ -29,6 +29,9 @@ ERRORS = {
     INTERNAL_ERROR: "Internal Server Error",
 }
 
+ONLINE_SCORE_METHOD = 'online_score'
+CLIENTS_INTERESTS_METHOD = 'clients_interests'
+
 
 def is_admin(request_obj):
     return request_obj.login == ADMIN_LOGIN
@@ -61,7 +64,7 @@ def method_handler(request, ctx, store):
     if not check_auth(req_obj):
         return ERRORS[FORBIDDEN], FORBIDDEN
 
-    if req_obj.method == 'online_score':
+    if req_obj.method == ONLINE_SCORE_METHOD:
         online_score_obj = request_object.OnlineScoreRequest(req_obj.arguments)
 
         errors = online_score_obj.get_validation_errors()
@@ -76,7 +79,7 @@ def method_handler(request, ctx, store):
             score = scoring.get_score(**online_score_obj.asdict())
         return {'score': score}, OK
 
-    elif req_obj.method == 'clients_interests':
+    elif req_obj.method == CLIENTS_INTERESTS_METHOD:
         client_interests_obj = request_object.ClientsInterestsRequest(req_obj.arguments)
         errors = client_interests_obj.get_validation_errors()
         if errors:
@@ -88,8 +91,11 @@ def method_handler(request, ctx, store):
             for client_id in client_interests_obj.client_ids
         }
         return interests, OK
+    else:
+        err = 'unsupported method, use one of {}'.format(
+            [ONLINE_SCORE_METHOD, CLIENTS_INTERESTS_METHOD])
 
-    return None, OK
+        return err, INVALID_REQUEST
 
 
 class MainHTTPHandler(BaseHTTPRequestHandler):
