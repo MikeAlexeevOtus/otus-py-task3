@@ -15,6 +15,7 @@ import scoring
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
 ADMIN_SALT = "42"
+ADMIN_SCORE = 42
 OK = 200
 BAD_REQUEST = 400
 FORBIDDEN = 403
@@ -72,7 +73,7 @@ def method_handler(request, ctx, store):
         ctx['has'] = online_score_obj.initialized_fields
 
         if is_admin(req_obj):
-            score = 42
+            score = ADMIN_SCORE
         else:
             score = scoring.get_score(**online_score_obj.asdict())
         return {'score': score}, OK
