@@ -55,6 +55,9 @@ def check_auth(request):
 
 
 def method_handler(request, ctx, store):
+    if not isinstance(request, dict) or 'body' not in request:
+        raise RuntimeError('wrong request structure')
+
     req_obj = request_object.MethodRequest(request['body'])
     errors = req_obj.get_validation_errors()
     if errors:
