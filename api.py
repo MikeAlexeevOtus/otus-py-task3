@@ -50,9 +50,7 @@ def check_auth(request):
     # for debug only
     logging.debug('correct digest: %s', digest)
 
-    if digest == request.token:
-        return True
-    return False
+    return digest == request.token
 
 
 def method_handler(request, ctx, store):
