@@ -150,7 +150,7 @@ class GenderField(Field):
             ', '.join(str(i) for i in possible_values)
         )
 
-        if val not in possible_values:
+        if not isinstance(val, int) or val not in possible_values:
             raise ValidationError(err)
 
 

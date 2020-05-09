@@ -84,3 +84,32 @@ class TestFields(unittest.TestCase):
         with mocked_today(datetime.date(2000, 1, 1)), \
                 self.assertRaisesRegexp(ValidationError, "age more than"):
             BirthDayField()._validate('31.12.1929')
+
+    @cases([0, 1, 2])
+    def test_gender_allowed(self, value):
+        GenderField()._validate(value)
+
+    @cases([-1, 0.0, 3, 3.0, 'abc', '', [], ])
+    def test_gender_forbidden(self, value):
+        with self.assertRaisesRegexp(ValidationError, "must be an integer, one of"):
+            GenderField()._validate(value)
+
+    @cases([
+        '71234567891',
+        71234567891
+    ])
+    def test_phone_allowed(self, value):
+        PhoneField()._validate(value)
+
+    @cases([
+        123,
+        -1,
+        0,
+        '7123456789',
+        7123456789,
+        'not-a-number',
+        61234567891,
+    ])
+    def test_phone_forbidden(self, value):
+        with self.assertRaisesRegexp(ValidationError, "must be an integer or string, 11 chars"):
+            PhoneField()._validate(value)
