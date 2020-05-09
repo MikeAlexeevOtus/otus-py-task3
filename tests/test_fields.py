@@ -11,20 +11,17 @@ from utils import cases
 
 
 class TestFields(unittest.TestCase):
-    def test_nullable_forbidden(self):
-        field = Field(nullable=False)
-        field._validate(0)   # any not-None value
+    @cases([
+        Field,
+        CharField
+    ])
+    def test_nullable(self, cls):
+        field = cls(nullable=True)
+        field._validate(None)
 
+        field = cls(nullable=False)
         with self.assertRaisesRegexp(ValidationError, "can't be null"):
             field._validate(None)
-
-    @cases([
-        0,  # any not-None value
-        None
-    ])
-    def test_nullable_allowed(self, value):
-        field = Field(nullable=True)
-        field._validate(value)
 
     @cases([None, '', u'', 'abc', u'фыва'])
     def test_charfield_allowed(self, value):
