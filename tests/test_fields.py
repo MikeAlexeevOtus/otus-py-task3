@@ -31,8 +31,10 @@ class TestFields(unittest.TestCase):
         PhoneField,
     ])
     def test_nullable(self, cls):
+        # can set None
         cls(nullable=True)._validate(None)
 
+        # can't set None
         with self.assertRaisesRegexp(ValidationError, "can't be null"):
             cls(nullable=False)._validate(None)
 
