@@ -30,32 +30,46 @@ class TestFields(unittest.TestCase):
         PhoneField,
     ])
     def test_nullable(self, cls):
-        field = cls(nullable=True)
-        field._validate(None)
+        cls(nullable=True)._validate(None)
 
-        field = cls(nullable=False)
         with self.assertRaisesRegexp(ValidationError, "can't be null"):
-            field._validate(None)
+            cls(nullable=False)._validate(None)
 
     @cases(['', u'', 'abc', u'фыва'])
     def test_charfield_allowed(self, value):
-        field = CharField()
-        field._validate(value)
+        CharField()._validate(value)
 
-    @cases([CharField, EmailField])
+    @cases([CharField, EmailField, BirthDayField, DateField])
     @cases([0, 42, {}, []])
     def test_charfield_forbidden(self, cls, value):
-        field = EmailField()
         with self.assertRaisesRegexp(ValidationError, "must be a string"):
-            field._validate(value)
+            cls()._validate(value)
 
     @cases(['abcd@abcd', u'фыва@фыва'])
     def test_email_allowed(self, value):
-        field = EmailField()
-        field._validate(value)
+        EmailField()._validate(value)
 
     @cases(['abcd', u'фыва', '', u''])
     def test_email_forbidden(self, value):
-        field = EmailField()
         with self.assertRaisesRegexp(ValidationError, "must be a valid email addr"):
-            field._validate(value)
+            EmailField()._validate(value)
+
+    @cases([{}, {1: 10}, {'abc': 'x'}])
+    def test_arguments_allowed(self, value):
+        ArgumentsField()._validate(value)
+
+    @cases(['', 0, 10, 'abc', [], [1, 2], ])
+    def test_arguments_forbidden(self, value):
+        with self.assertRaisesRegexp(ValidationError, "must be a dict"):
+            ArgumentsField()._validate(value)
+
+    @cases(['10.10.2020', '07.07.2020', '5.5.2020', '5.05.2020'])
+    def test_datetime_allowed(self, value):
+        DateField()._validate(value)
+
+    @cases([DateField, BirthDayField])
+    @cases(['10102020', '10.10', '10-10-2020',
+            '32.10.2020', '15.13.2020', '005.05.2020'])
+    def test_datetime_forbidden(self, cls, value):
+        with self.assertRaisesRegexp(ValidationError, "must be a string in format"):
+            cls()._validate(value)
