@@ -15,10 +15,9 @@ class Storage(object):
         'socket_connect_timeout': 10,
     }
 
-    def __init__(self, redis_opts=None):
-        redis_opts = redis_opts or {}
+    def __init__(self, **override_redis_kwargs):
         redis_kwargs = copy.deepcopy(self.DEFAULT_REDIS_OPTS)
-        redis_kwargs.update(redis_opts)
+        redis_kwargs.update(override_redis_kwargs)
 
         self._redis = redis.Redis(**redis_kwargs)
 
@@ -51,7 +50,3 @@ class Storage(object):
     @_retry(raise_=True)
     def get(self, key):
         return self._redis.get(key)
-
-    @_retry(raise_=True)
-    def set(self, key, value):
-        self._redis.set(key, value)

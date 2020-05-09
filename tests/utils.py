@@ -2,6 +2,8 @@ import sys
 import functools
 import datetime
 import contextlib
+import subprocess
+import shlex
 
 import mock
 
@@ -37,3 +39,13 @@ def mock_today(return_value):
 def mock_redis(mock_redis_instance):
     with mock.patch('redis.Redis', return_value=mock_redis_instance):
         yield
+
+
+def start_redis(REDIS_PORT):
+    cmd = 'docker run -d --rm -p 127.0.0.1:{}:6379/tcp redis:latest'.format(REDIS_PORT)
+    return subprocess.check_output(shlex.split(cmd)).strip()
+
+
+def stop_redis(container_id):
+    cmd = ['docker', 'stop', container_id]
+    subprocess.check_call(cmd)
