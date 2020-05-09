@@ -33,9 +33,10 @@ class FieldInitializerMetaclass(type):
 class Field(object):
     """descriptor class for field validation"""
 
-    def __init__(self, required=True, nullable=False):
+    def __init__(self, required=True, nullable=False, name=None):
         self.required = required
         self.nullable = nullable
+        self.name = name
 
     def __get__(self, obj, objtype):
         return obj.__dict__.get(self.name)
