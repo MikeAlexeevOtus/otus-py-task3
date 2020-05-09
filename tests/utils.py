@@ -1,5 +1,9 @@
 import sys
 import functools
+import datetime
+import contextlib
+
+import mock
 
 
 def cases(cases):
@@ -17,3 +21,13 @@ def cases(cases):
                     raise type_, 'Error in case {}: {}'.format(c, value), traceback
         return wrapper
     return decorator
+
+
+@contextlib.contextmanager
+def mocked_today(return_value):
+    orig_date = datetime.date
+    # taken from https://stackoverflow.com/a/25652721
+    with mock.patch('datetime.date') as mock_date:
+        mock_date.today.return_value = return_value
+        mock_date.side_effect = lambda *args, **kw: orig_date(*args, **kw)
+        yield mock_date

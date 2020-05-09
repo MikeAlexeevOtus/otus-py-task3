@@ -1,5 +1,6 @@
 #! encoding: utf-8
 import unittest
+import datetime
 
 from request_object import (
     Field,
@@ -14,7 +15,7 @@ from request_object import (
     PhoneField,
 )
 
-from utils import cases
+from utils import cases, mocked_today
 
 
 class TestFields(unittest.TestCase):
@@ -63,13 +64,23 @@ class TestFields(unittest.TestCase):
         with self.assertRaisesRegexp(ValidationError, "must be a dict"):
             ArgumentsField()._validate(value)
 
-    @cases(['10.10.2020', '07.07.2020', '5.5.2020', '5.05.2020'])
+    @cases(['10.10.2020', '07.07.1020', '5.5.2020', '5.05.2020'])
     def test_datetime_allowed(self, value):
         DateField()._validate(value)
 
     @cases([DateField, BirthDayField])
-    @cases(['10102020', '10.10', '10-10-2020',
+    @cases(['10102020', '10.10', '10-10-2020', '2020.03.10', 'abcd',
             '32.10.2020', '15.13.2020', '005.05.2020'])
     def test_datetime_forbidden(self, cls, value):
         with self.assertRaisesRegexp(ValidationError, "must be a string in format"):
             cls()._validate(value)
+
+    @cases(['01.01.1935', '01.01.2000', '01.01.2030'])
+    def test_birthdate_allowed(self, value):
+        with mocked_today(datetime.date(2000, 1, 1)):
+            BirthDayField()._validate(value)
+
+    def test_birthdate_forbidden(self):
+        with mocked_today(datetime.date(2000, 1, 1)), \
+                self.assertRaisesRegexp(ValidationError, "age more than"):
+            BirthDayField()._validate('31.12.1929')
