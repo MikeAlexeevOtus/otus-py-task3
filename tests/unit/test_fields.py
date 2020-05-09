@@ -2,7 +2,7 @@
 import unittest
 import datetime
 
-from request_object import (
+from field import (
     Field,
     ValidationError,
     ArgumentsField,
