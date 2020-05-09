@@ -160,12 +160,12 @@ class ClientIDsField(Field):
         if val is None:
             return
 
-        err = 'field "{}" must be a list of integers'.format(self.name)
+        err = 'field "{}" must be a list of non-negative integers'.format(self.name)
         if not isinstance(val, list) or not val:
             raise ValidationError(err)
 
         for id_ in val:
-            if not isinstance(id_, int):
+            if not isinstance(id_, int) or id_ < 0:
                 raise ValidationError(err)
 
 

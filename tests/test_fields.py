@@ -113,3 +113,22 @@ class TestFields(unittest.TestCase):
     def test_phone_forbidden(self, value):
         with self.assertRaisesRegexp(ValidationError, "must be an integer or string, 11 chars"):
             PhoneField()._validate(value)
+
+    @cases([
+        [0, 1],
+        [3],
+    ])
+    def test_clientids_allowed(self, value):
+        ClientIDsField()._validate(value)
+
+    @cases([
+        [],
+        {},
+        '',
+        [''],
+        [1, None],
+        [2, -1],
+    ])
+    def test_clientids_forbidden(self, value):
+        with self.assertRaisesRegexp(ValidationError, "must be a list of non-negative"):
+            ClientIDsField()._validate(value)
