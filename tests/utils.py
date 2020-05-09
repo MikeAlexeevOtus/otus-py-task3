@@ -24,10 +24,16 @@ def cases(cases):
 
 
 @contextlib.contextmanager
-def mocked_today(return_value):
+def mock_today(return_value):
     orig_date = datetime.date
     # taken from https://stackoverflow.com/a/25652721
     with mock.patch('datetime.date') as mock_date:
         mock_date.today.return_value = return_value
         mock_date.side_effect = lambda *args, **kw: orig_date(*args, **kw)
-        yield mock_date
+        yield
+
+
+@contextlib.contextmanager
+def mock_redis(mock_redis_instance):
+    with mock.patch('redis.Redis', return_value=mock_redis_instance):
+        yield

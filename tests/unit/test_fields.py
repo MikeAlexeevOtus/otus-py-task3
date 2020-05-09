@@ -15,7 +15,7 @@ from request_object import (
     PhoneField,
 )
 
-from ..utils import cases, mocked_today
+from utils import cases, mock_today
 
 
 class TestFields(unittest.TestCase):
@@ -79,11 +79,11 @@ class TestFields(unittest.TestCase):
 
     @cases(['01.01.1935', '01.01.2000', '01.01.2030'])
     def test_birthdate_allowed(self, value):
-        with mocked_today(datetime.date(2000, 1, 1)):
+        with mock_today(datetime.date(2000, 1, 1)):
             BirthDayField()._validate(value)
 
     def test_birthdate_forbidden(self):
-        with mocked_today(datetime.date(2000, 1, 1)), \
+        with mock_today(datetime.date(2000, 1, 1)), \
                 self.assertRaisesRegexp(ValidationError, "age more than"):
             BirthDayField()._validate('31.12.1929')
 
