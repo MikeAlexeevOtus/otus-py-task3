@@ -11,6 +11,7 @@ from BaseHTTPServer import HTTPServer, BaseHTTPRequestHandler
 
 import request_object
 import scoring
+from storage import Storage
 
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
@@ -78,7 +79,7 @@ def method_handler(request, ctx, store):
         if is_admin(req_obj):
             score = ADMIN_SCORE
         else:
-            score = scoring.get_score(**online_score_obj.asdict())
+            score = scoring.get_score(Storage(), **online_score_obj.asdict())
         return {'score': score}, OK
 
     elif req_obj.method == CLIENTS_INTERESTS_METHOD:
@@ -89,7 +90,7 @@ def method_handler(request, ctx, store):
 
         ctx['nclients'] = client_interests_obj.nclients
         interests = {
-            client_id: scoring.get_interests(client_id)
+            client_id: scoring.get_interests(Storage(), client_id)
             for client_id in client_interests_obj.client_ids
         }
         return interests, OK

@@ -44,8 +44,8 @@ class Storage(object):
         return self._redis.get(key)
 
     @_retry(raise_=False)
-    def cache_set(self, key, value):
-        self._redis.set(key, value)
+    def cache_set(self, key, value, ttl):
+        self._redis.set(key, value, ex=ttl)
 
     @_retry(raise_=True)
     def get(self, key):
