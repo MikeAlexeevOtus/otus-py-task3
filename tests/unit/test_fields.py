@@ -15,7 +15,7 @@ from request_object import (
     PhoneField,
 )
 
-from utils import cases, mocked_today
+from ..utils import cases, mocked_today
 
 
 class TestFields(unittest.TestCase):
