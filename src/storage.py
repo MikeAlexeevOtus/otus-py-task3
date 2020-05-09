@@ -44,10 +44,14 @@ class Storage(object):
     def cache_get(self, key):
         return self._redis.get(key)
 
-    @_retry(raise_=True)
+    @_retry(raise_=False)
     def cache_set(self, key, value):
         self._redis.set(key, value)
 
-    @_retry()
+    @_retry(raise_=True)
     def get(self, key):
         return self._redis.get(key)
+
+    @_retry(raise_=True)
+    def set(self, key, value):
+        self._redis.set(key, value)
