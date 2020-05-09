@@ -100,13 +100,20 @@ class PhoneField(Field):
 
 
 class DateField(CharField):
+    def __set__(self, obj, val):
+        self._validate(val)
+        obj.__dict__[self.name] = self._parse_date(val)
+
+    def _parse_date(self, val):
+        return datetime.datetime.strptime(val, DATE_FMT)
+
     def _validate(self, val):
         super(DateField, self)._validate(val)
         if val is None:
             return
 
         try:
-            datetime.datetime.strptime(val, DATE_FMT)
+            self._parse_date(val)
         except ValueError:
             raise ValidationError('field "{}" must be a string in format "DD.MM.YYYY"'.format(self.name))
 
