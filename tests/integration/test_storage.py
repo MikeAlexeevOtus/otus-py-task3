@@ -4,7 +4,7 @@ import mock
 from redis.exceptions import ConnectionError
 
 from storage import Storage
-from utils import mock_redis, start_redis, stop_redis
+from utils import patch_redis, start_redis, stop_redis
 
 
 class TestStorageOffline(unittest.TestCase):
@@ -20,7 +20,7 @@ class TestStorageOffline(unittest.TestCase):
     def test_get_cache_timeout_retries(self):
         mock_r = mock.Mock()
         mock_r.get.side_effect = ConnectionError()
-        with mock_redis(mock_r):
+        with patch_redis(mock_r):
             storage = Storage()
             storage.cache_get('key')
 
@@ -29,7 +29,7 @@ class TestStorageOffline(unittest.TestCase):
     def test_get_timeout_retries(self):
         mock_r = mock.Mock()
         mock_r.get.side_effect = ConnectionError()
-        with mock_redis(mock_r), \
+        with patch_redis(mock_r), \
                 self.assertRaisesRegexp(ConnectionError, "gave up"):
             storage = Storage()
             storage.get('key')
