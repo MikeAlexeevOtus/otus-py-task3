@@ -81,6 +81,10 @@ class PhoneField(Field):
     STRLEN = 11
     FIRST_CHAR = '7'
 
+    def __set__(self, obj, val):
+        self._validate(val)
+        obj.__dict__[self.name] = str(val)
+
     def _validate(self, val):
         super(PhoneField, self)._validate(val)
         if val is None:
