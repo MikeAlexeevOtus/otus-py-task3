@@ -1,6 +1,6 @@
 VENV_BIN=$(CURDIR)/.venv/bin
 
-.PHONY: tests run
+.PHONY: tests run start_docker
 
 .venv:
 	virtualenv --python python2.7 .venv
@@ -11,3 +11,6 @@ run:
 
 tests:
 	cd src && $(VENV_BIN)/python -m unittest discover -s ../tests $(args)
+
+start_docker:
+	docker run --rm -p 127.0.0.1:6379:6379/tcp  redis:latest
