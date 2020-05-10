@@ -12,15 +12,16 @@ class TestMethodRequest(unittest.TestCase):
     @cases([
         {},
         '',
-        dict(account=None, login=None),
+        {'account': None, 'login': None},
+        {'account': None, 'login': 123, 'token': None, 'arguments': None, 'method': 'abc'},
     ])
     def test_validation_fail(self, data):
         mr = MethodRequest(data)
         self.assertTrue(mr.get_validation_errors())
 
     @cases([
-        dict(account=None, login=None, token=None, arguments=None, method='abc'),
-        dict(account=None, login=None, token=None, arguments=None, method='abc', other_field=10)
+        {'account': None, 'login': None, 'token': None, 'arguments': None, 'method': 'abc'},
+        {'account': None, 'login': None, 'token': None, 'arguments': None, 'method': 'abc', 'other_field': 123},
     ])
     def test_validation_pass(self, data):
         mr = MethodRequest(data)

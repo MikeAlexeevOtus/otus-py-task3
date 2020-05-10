@@ -48,8 +48,8 @@ class TestStorageOnline(unittest.TestCase):
 
     def test_get_cache(self):
         storage = Storage(port=self.REDIS_PORT)
-        storage.cache_set('key1', 'val1')
-        storage.cache_set('key2', 'val2')
+        storage.cache_set('key1', 'val1', 60)
+        storage.cache_set('key2', 'val2', 60)
 
         self.assertEqual(storage.cache_get('key1'), 'val1')
         self.assertEqual(storage.cache_get('key2'), 'val2')
