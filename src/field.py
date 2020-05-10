@@ -105,7 +105,8 @@ class DateField(CharField):
         obj.__dict__[self.name] = self._parse_date(val)
 
     def _parse_date(self, val):
-        return datetime.datetime.strptime(val, DATE_FMT)
+        if val:
+            return datetime.datetime.strptime(val, DATE_FMT)
 
     def _validate(self, val):
         super(DateField, self)._validate(val)
