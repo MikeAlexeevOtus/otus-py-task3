@@ -15,6 +15,7 @@ import scoring
 SALT = "Otus"
 ADMIN_LOGIN = "admin"
 ADMIN_SALT = "42"
+ADMIN_SCORE = 42
 OK = 200
 BAD_REQUEST = 400
 FORBIDDEN = 403
@@ -28,6 +29,9 @@ ERRORS = {
     INVALID_REQUEST: "Invalid Request",
     INTERNAL_ERROR: "Internal Server Error",
 }
+
+ONLINE_SCORE_METHOD = 'online_score'
+CLIENTS_INTERESTS_METHOD = 'clients_interests'
 
 
 def is_admin(request_obj):
@@ -47,12 +51,13 @@ def check_auth(request):
     # for debug only
     logging.debug('correct digest: %s', digest)
 
-    if digest == request.token:
-        return True
-    return False
+    return digest == request.token
 
 
 def method_handler(request, ctx, store):
+    if not isinstance(request, dict) or 'body' not in request:
+        raise RuntimeError('wrong request structure')
+
     req_obj = request_object.MethodRequest(request['body'])
     errors = req_obj.get_validation_errors()
     if errors:
@@ -61,7 +66,7 @@ def method_handler(request, ctx, store):
     if not check_auth(req_obj):
         return ERRORS[FORBIDDEN], FORBIDDEN
 
-    if req_obj.method == 'online_score':
+    if req_obj.method == ONLINE_SCORE_METHOD:
         online_score_obj = request_object.OnlineScoreRequest(req_obj.arguments)
 
         errors = online_score_obj.get_validation_errors()
@@ -71,12 +76,12 @@ def method_handler(request, ctx, store):
         ctx['has'] = online_score_obj.initialized_fields
 
         if is_admin(req_obj):
-            score = 42
+            score = ADMIN_SCORE
         else:
             score = scoring.get_score(**online_score_obj.asdict())
         return {'score': score}, OK
 
-    elif req_obj.method == 'clients_interests':
+    elif req_obj.method == CLIENTS_INTERESTS_METHOD:
         client_interests_obj = request_object.ClientsInterestsRequest(req_obj.arguments)
         errors = client_interests_obj.get_validation_errors()
         if errors:
@@ -88,8 +93,11 @@ def method_handler(request, ctx, store):
             for client_id in client_interests_obj.client_ids
         }
         return interests, OK
+    else:
+        err = 'unsupported method, use one of {}'.format(
+            [ONLINE_SCORE_METHOD, CLIENTS_INTERESTS_METHOD])
 
-    return None, OK
+        return err, INVALID_REQUEST
 
 
 class MainHTTPHandler(BaseHTTPRequestHandler):
@@ -148,5 +156,9 @@ if __name__ == "__main__":
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        pass
+        logging.error("server execution was interrupted")
+    except Exception:
+        logging.exception("exception in server")
+
+    logging.info("stopping server")
     server.server_close()
