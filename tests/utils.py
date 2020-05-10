@@ -41,8 +41,8 @@ def mock_redis(mock_redis_instance):
         yield
 
 
-def start_redis(REDIS_PORT):
-    cmd = 'docker run -d --rm -p 127.0.0.1:{}:6379/tcp redis:latest'.format(REDIS_PORT)
+def start_redis(redis_port):
+    cmd = 'docker run -d --rm -p 127.0.0.1:{}:6379/tcp redis:latest'.format(redis_port)
     return subprocess.check_output(shlex.split(cmd)).strip()
 
 
