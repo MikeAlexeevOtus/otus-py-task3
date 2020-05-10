@@ -83,7 +83,7 @@ class PhoneField(Field):
 
     def __set__(self, obj, val):
         self._validate(val)
-        obj.__dict__[self.name] = str(val)
+        obj.__dict__[self.name] = str(val) if val else None
 
     def _validate(self, val):
         super(PhoneField, self)._validate(val)

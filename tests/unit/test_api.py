@@ -83,7 +83,12 @@ class TestSuite(unittest.TestCase):
     def test_ok_score_request(self, arguments):
         request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
         self.set_valid_auth(request)
-        response, code = self.get_response(request)
+        mock_r = mock.Mock()
+        mock_r.get.return_value = None
+        mock_r.set.return_value = None
+        with patch_redis(mock_r):
+            response, code = self.get_response(request)
+
         self.assertEqual(api.OK, code, arguments)
         score = response.get("score")
         self.assertTrue(isinstance(score, (int, float)) and score >= 0, arguments)
