@@ -10,4 +10,4 @@ run:
 	$(VENV_BIN)/python src/api.py
 
 tests:
-	cd src && $(VENV_BIN)/python -m unittest discover -s ../tests -v
+	cd src && $(VENV_BIN)/python -m unittest discover -s ../tests $(args)
