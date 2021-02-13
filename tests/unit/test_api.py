@@ -8,7 +8,7 @@ import api
 from utils import cases, patch_redis
 
 
-class TestSuite(unittest.TestCase):
+class TestApi(unittest.TestCase):
     def setUp(self):
         self.context = {}
         self.headers = {}
