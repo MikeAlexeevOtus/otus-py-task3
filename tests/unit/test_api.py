@@ -5,10 +5,11 @@ import unittest
 import mock
 
 import api
+import request_object
 from utils import cases, patch_redis
 
 
-class TestSuite(unittest.TestCase):
+class TestApi(unittest.TestCase):
     def setUp(self):
         self.context = {}
         self.headers = {}
@@ -136,3 +137,30 @@ class TestSuite(unittest.TestCase):
         self.assertTrue(all(v and isinstance(v, list) and all(isinstance(i, basestring) for i in v)
                         for v in response.values()))
         self.assertEqual(self.context.get("nclients"), len(arguments["client_ids"]))
+
+    @cases([
+        ({}, False),
+        ({"login": api.ADMIN_LOGIN, }, False),
+        (
+            {
+                "login": api.ADMIN_LOGIN,
+                "token": hashlib.sha512(datetime.datetime.now().strftime("%Y%m%d%H") + api.ADMIN_SALT).hexdigest()
+            },
+            True
+        ),
+        (
+            {"login": "abc", "token": hashlib.sha512("abc" + api.SALT).hexdigest()},
+            True
+        ),
+        (
+            {"account": "abc", "token": hashlib.sha512("abc" + api.SALT).hexdigest()},
+            True
+        ),
+        (
+            {"account": "abc", "login": "123", "token": hashlib.sha512("abc" + "123" + api.SALT).hexdigest()},
+            True
+        ),
+    ])
+    def test_check_auth(self, request_body, expencted_auth_result):
+        req_obj = request_object.MethodRequest(request_body)
+        self.assertEqual(api.check_auth(req_obj), expencted_auth_result)
