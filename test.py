@@ -4,6 +4,7 @@ import functools
 import unittest
 
 import api
+import scoring
 
 
 def cases(cases):
@@ -136,6 +137,54 @@ class TestRequestsSuite(unittest.TestCase):
         self.assertTrue(all(v and isinstance(v, list) and all(isinstance(i, basestring) for i in v)
                         for v in response.values()))
         self.assertEqual(self.context.get("nclients"), len(arguments["client_ids"]))
+
+
+class TestScoringSuite(unittest.TestCase):
+
+    @cases([
+        # phone and added score
+        (None, 0),
+        ('not empty', 1.5),
+    ])
+    @cases([
+        # email and added score
+        (None, 0),
+        ('not empty', 1.5),
+    ])
+    @cases([
+        # birthday, gender and added score
+        (None, None, 0),
+        ('not empty', None, 0),
+        (None, 'not empty', 0),
+        ('not empty', 'not empty', 1.5),
+    ])
+    @cases([
+        # first_name, last_name and added score
+        (None, None, 0),
+        ('not empty', None, 0),
+        (None, 'not empty', 0),
+        ('not empty', 'not empty', 0.5),
+    ])
+    def test_get_score(self,
+                       phone, phone_added_score,
+                       email, email_added_score,
+                       birthday, gender, birthday_gender_added_score,
+                       first_name, last_name, name_added_score):
+
+        expected_score = (
+            phone_added_score +
+            email_added_score +
+            birthday_gender_added_score +
+            name_added_score
+        )
+        actual_score = scoring.get_score(phone=phone,
+                                         email=email,
+                                         birthday=birthday,
+                                         gender=gender,
+                                         first_name=first_name,
+                                         last_name=last_name)
+
+        self.assertEqual(actual_score, expected_score)
 
 
 if __name__ == "__main__":
