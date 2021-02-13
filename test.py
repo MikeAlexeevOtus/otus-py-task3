@@ -17,7 +17,7 @@ def cases(cases):
     return decorator
 
 
-class TestSuite(unittest.TestCase):
+class TestRequestsSuite(unittest.TestCase):
     def setUp(self):
         self.context = {}
         self.headers = {}
