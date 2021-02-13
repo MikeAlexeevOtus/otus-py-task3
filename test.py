@@ -4,6 +4,7 @@ import functools
 import unittest
 
 import api
+import request_object
 import scoring
 
 
@@ -46,6 +47,33 @@ class TestRequestsSuite(unittest.TestCase):
     def test_bad_auth(self, request):
         _, code = self.get_response(request)
         self.assertEqual(api.FORBIDDEN, code)
+
+    @cases([
+        ({}, False),
+        ({"login": api.ADMIN_LOGIN, }, False),
+        (
+            {
+                "login": api.ADMIN_LOGIN,
+                "token": hashlib.sha512(datetime.datetime.now().strftime("%Y%m%d%H") + api.ADMIN_SALT).hexdigest()
+            },
+            True
+        ),
+        (
+            {"login": "abc", "token": hashlib.sha512("abc" + api.SALT).hexdigest()},
+            True
+        ),
+        (
+            {"account": "abc", "token": hashlib.sha512("abc" + api.SALT).hexdigest()},
+            True
+        ),
+        (
+            {"account": "abc", "login": "123", "token": hashlib.sha512("abc" + "123" + api.SALT).hexdigest()},
+            True
+        ),
+    ])
+    def test_check_auth(self, request_body, expencted_auth_result):
+        req_obj = request_object.MethodRequest(request_body)
+        self.assertEqual(api.check_auth(req_obj), expencted_auth_result)
 
     @cases([
         {"account": "horns&hoofs", "login": "h&f", "method": "online_score"},
