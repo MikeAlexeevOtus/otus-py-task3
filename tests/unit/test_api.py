@@ -1,20 +1,11 @@
 import hashlib
 import datetime
-import functools
 import unittest
 
+import mock
+
 import api
-
-
-def cases(cases):
-    def decorator(f):
-        @functools.wraps(f)
-        def wrapper(*args):
-            for c in cases:
-                new_args = args + (c if isinstance(c, tuple) else (c,))
-                f(*new_args)
-        return wrapper
-    return decorator
+from utils import cases, patch_redis
 
 
 class TestSuite(unittest.TestCase):
@@ -92,7 +83,12 @@ class TestSuite(unittest.TestCase):
     def test_ok_score_request(self, arguments):
         request = {"account": "horns&hoofs", "login": "h&f", "method": "online_score", "arguments": arguments}
         self.set_valid_auth(request)
-        response, code = self.get_response(request)
+        mock_r = mock.Mock()
+        mock_r.get.return_value = None
+        mock_r.set.return_value = None
+        with patch_redis(mock_r):
+            response, code = self.get_response(request)
+
         self.assertEqual(api.OK, code, arguments)
         score = response.get("score")
         self.assertTrue(isinstance(score, (int, float)) and score >= 0, arguments)
@@ -130,13 +126,13 @@ class TestSuite(unittest.TestCase):
     def test_ok_interests_request(self, arguments):
         request = {"account": "horns&hoofs", "login": "h&f", "method": "clients_interests", "arguments": arguments}
         self.set_valid_auth(request)
-        response, code = self.get_response(request)
+        mock_r = mock.Mock()
+        mock_r.get.return_value = '["cats", "dogs"]'
+        with patch_redis(mock_r):
+            response, code = self.get_response(request)
+
         self.assertEqual(api.OK, code, arguments)
         self.assertEqual(len(arguments["client_ids"]), len(response))
         self.assertTrue(all(v and isinstance(v, list) and all(isinstance(i, basestring) for i in v)
                         for v in response.values()))
         self.assertEqual(self.context.get("nclients"), len(arguments["client_ids"]))
-
-
-if __name__ == "__main__":
-    unittest.main()
